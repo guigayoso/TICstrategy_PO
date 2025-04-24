@@ -14,7 +14,7 @@ import tc_optimization as tc
 Strategy= strategy.Strategy_Portfolio(
                         start_date = dt(2024, 1, 2),
                         end_date = dt(2024, 12, 31),
-                        Asset_Category=dm.Asset_Category.SP500_Stocks,
+                        Asset_Category=dm.Asset_Category.Top20CryptoByMarketCap,
                         Momentum_Type= dm.Momentum_Type.MACD,
                         Mean_Rev_Type= dm.Mean_Rev_Type.RSI,
                         Rebalancing_Period= dm.Rebalancing_Period.WEEKLY,
