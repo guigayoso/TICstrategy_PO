@@ -1,6 +1,6 @@
 from data.crypto_data_scraping.get_crypto_data import CryptoDataProcessor
 from data.stock_data_scraping.get_stock_data import StockDataProcessor
-import src.data_models as dm
+import data_models as dm
 import pandas as pd
 from datetime import datetime as dt
 import yfinance as yf

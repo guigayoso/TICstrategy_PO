@@ -13,15 +13,15 @@ import tc_optimization as tc
 
 Strategy= strategy.Strategy_Portfolio(
                         start_date = dt(2024, 1, 2),
-                        end_date = dt(2024, 12, 31),
+                        end_date = dt(2024, 12, 31), # Actually, the end is today
                         Asset_Category=dm.Asset_Category.Top20CryptoByMarketCap,
                         Momentum_Type= dm.Momentum_Type.MACD,
                         Mean_Rev_Type= dm.Mean_Rev_Type.RSI,
-                        Rebalancing_Period= dm.Rebalancing_Period.WEEKLY,
+                        Rebalancing_Period= dm.Rebalancing_Period.daily,
                         Functional_Constraints= dm.Functional_Constraints(
                             Take_Profit= 0.2,
                             Stop_Loss= 0.1, Capital_at_Risk= 0.6, 
-                            Hurst_Filter = dm.HurstFilter.MODERATE,
+                            Hurst_Filter = dm.HurstFilter.STANDARD,
                             RSIFilter= dm.RSIFilter.STANDARD,
                             Hurst_Exponents_Period = 180,
                             Momentum_Threshold= 0.01,
