@@ -1,11 +1,15 @@
 from data.crypto_data_scraping.get_crypto_data import CryptoDataProcessor
 from data.stock_data_scraping.get_stock_data import StockDataProcessor
-import data_models as dm
+import src.data_models as dm
 import pandas as pd
 from datetime import datetime as dt
 import yfinance as yf
 import ast  # Used to evaluate strings as Python literals
+import sys
+import os
 
+# Adiciona o diretório pai ao sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 class DataProcessor:
     crypto_csv_path = "data/crypto_data_scraping/crypto_prices_rank.csv"
@@ -25,7 +29,7 @@ class DataProcessor:
         self.benchmark_ticker = benchmark_ticker
 
         self.crypto_data_processor = CryptoDataProcessor()
-        self.stocks_data_processor = StockDataProcessor(start_year=2024, prices_filename=self.stocks_csv_path, evolution_filename=self.stocks_evo_path)
+        self.stocks_data_processor = StockDataProcessor()
 
         print(asset_category)
         if asset_category == dm.Asset_Category.Top20CryptoByMarketCap:
@@ -121,7 +125,7 @@ class DataProcessor:
 
             close_prices[col] = new_col
 
-        return close_prices.dropna(axis=1, thresh=len(close_prices) - 2).fillna(
+        return close_prices.dropna(axis=1, thresh=len(close_prices)).fillna(
             method="ffill"
         )  # Drop columns that dont have 2 datapoints - SEE LATER!
 

@@ -4,12 +4,12 @@ import pandas as pd
 from datetime import datetime as dt
 from datetime import timedelta
 
-import data_models as dm
-import data.data_collection as dc
+import src.data_models as dm
+import src.data.data_collection as dc
 import data_analysis as analysis
-import signalling
-import portfolio_weights as pw
-import tc_optimization as tc
+import src.signalling as signalling
+import src.portfolio_weights as pw
+import src.tc_optimization as tc
 
 import time
 
@@ -75,10 +75,13 @@ class Live:
 
         print(f"First Assets to Buy: {assets_to_buy}")
 
-        # First weights
         buy_array, _, _, _ = pw.calculate_uniform_weights(assets_to_buy, [], shorting_value = 0)
 
-        #self.weights = buy_array
+        if len(assets_to_buy) == 0:
+            print("No signals, returning equal weights")
+            assets_to_buy = closes.columns.tolist()
+            buy_array = [1 / len(assets_to_buy) for _ in assets_to_buy]
+
 
         # Update weights df
         self.target_weights = pd.DataFrame(columns=assets_to_buy)
@@ -185,7 +188,7 @@ class Live:
                     self.rebalancing(assets_to_buy) # Vai me dar os pesos ideais para a iteracao atual
                 else:
                     print(f"No Assets to Buy on date {dt.today()}")
-                    unbalanced_weights = self.get_current_weights() # Caso nao tenha target weughts para a iteracao atual, preencher tabela de pesos ideais com a evolucao dos ideais da iteracao passada
+                    unbalanced_weights = self.get_current_weights() # Caso nao tenha target weights para a iteracao atual, preencher tabela de pesos ideais com a evolucao dos ideais da iteracao passada
 
                     pw.update_weights_df(self.target_weights, dt.today(), assets_to_buy, np.nan)
                     pw.update_weights_df(self.rebalancing_weights, dt.today(), assets_to_buy, unbalanced_weights)

@@ -1,13 +1,12 @@
-import data_clients as dc
-import data_models as dm
-import data_utils as utils
+import src.data_models as dm
+import src.data_utils as utils
 from datetime import datetime as dt
 import pandas as pd
 import yahoofinancials as yf
 import numpy as np
-import signalling as signal
-import indicators as indicator
-import portfolio_strategy as strategy
+import src.signalling as signalling
+import src.indicators as indicator
+import src.portfolio_strategy as strategy
 
 '''
 

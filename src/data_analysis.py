@@ -1,6 +1,6 @@
-import data_models as dm
+import src.data_models as dm
 import pandas as pd
-import indicators as indicator
+import src.indicators as indicator
 from hurst import compute_Hc
 from datetime import datetime as dt
 import numpy as np

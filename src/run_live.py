@@ -15,7 +15,7 @@ import live
 
 Live_Strategy = live.Live(Best_Delta=0.124, 
                  Asset_Category=dm.Asset_Category.Top20CryptoByMarketCap,
-                 Momentum_Type= dm.Momentum_Type.MACD,
+                 Momentum_Type= dm.Momentum_Type.Cumulative_Returns,
                  Mean_Rev_Type= dm.Mean_Rev_Type.RSI,
                  Rebalancing_Period= dm.Rebalancing_Period.WEEKLY,
                  Functional_Constraints= dm.Functional_Constraints(

@@ -49,7 +49,7 @@ class DistanceMethod(str, enum.Enum):
         else:
             raise ValueError("Invalid distance method")
 
-def adjust_alpha(method, w_target, w_unbalanced, delta, verbose=False):
+def adjust_alpha(method, w_target, w_unbalanced, delta, verbose=False, tomas=False):
     """
     Adjust alpha based on delta and the distance between weights.
 
@@ -59,10 +59,25 @@ def adjust_alpha(method, w_target, w_unbalanced, delta, verbose=False):
         w_unbalanced (np.array): The weights at the end of the rebalancing period.
         delta (float): The threshold for adjusting alpha.
         verbose (bool): Whether to print additional information.
+        tomas (bool): formato dos pesos: True para [[ticker1, data, peso1], ...] e False para DataFrame (colunas assets, linhas datas). Lore: homenagem ao PM de 
 
     Returns:
         float: The alpha value (proportion of the target weights for the next rebalancing period).
     """
+
+    if tomas:
+        # transformar os pesos no nosso formato
+
+        w_target = pd.DataFrame(w_target, columns=['ticker', 'Date', 'weight'])
+        w_unbalanced = pd.DataFrame(w_unbalanced, columns=['ticker', 'Date', 'weight'])
+
+
+        w_target = w_target.pivot(index='Date', columns='ticker', values='weight')
+        w_unbalanced = w_unbalanced.pivot(index='Date', columns='ticker', values='weight')
+
+        w_target = w_target.reset_index()
+        w_unbalanced = w_unbalanced.reset_index()
+    
     distance = DistanceMethod.calculate_distance(method, w_target, w_unbalanced)
     if distance == 0:
         distance = 1e-10 # Avoid division by zero
@@ -78,6 +93,10 @@ def adjust_alpha(method, w_target, w_unbalanced, delta, verbose=False):
 
     print(f"Distance between {w_target} and {w_unbalanced} is {distance}")
     return min(1, max(0, delta / distance)) if distance > delta else 1
+
+
+
+
 
 def optimize_alpha(w_target, w_unbalanced, trendy_assets_df, mean_reverting_assets_df, previous_dataframe_assets, previous_date, date, gamma = 3, alpha_range = (0, 1), step = 0.05, transaction_cost = 0.01, verbose=False):
     """
