@@ -1,8 +1,3 @@
-import sys
-import os
-
-# Adiciona o diretório pai ao sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import src.data_analysis as analysis
 import src.signalling as signalling
 import src.data_models as dm
@@ -15,10 +10,11 @@ import pandas as pd
 
 class PortfolioOptimization():
 
-    def __init__(self, closes: pd.DataFrame, best_delta: float, mom_type: dm.Momentum_Type, mean_rev_type: dm.Mean_Rev_Type,
+    def __init__(self, best_delta: float, mom_type: dm.Momentum_Type, mean_rev_type: dm.Mean_Rev_Type,
                   rebalancing_period: dm.Rebalancing_Period,
                   functional_constraints: dm.Functional_Constraints, rebalance_constraints: dm.Rebalance_Constraints,
                   mom_days: int = 30,
+                  closes: pd.DataFrame = None,
                   previous_weights = None):
         self.closes = closes
         self.last_date = closes.index[-1]
@@ -34,13 +30,18 @@ class PortfolioOptimization():
     def get_weights(self):
 
         # Gerar sinais
-        filtered_data, trendy_assets, mean_reverting_assets = analysis.filter_data(analysis.get_data_analysis(self.closes, rebalancing_period=self.rebalancing_period, 
-                                                                                                            hurst_exponents_period=self.functional_constraints.hurst_exponents_period, 
-                                                                                                            mean_rev_type= self.mean_rev_type, momentum_type= self.momentum_type, 
-                                                                                                            functional_constraints= self.functional_constraints, 
-                                                                                                            momentus_days_period=self.momentum_days,
-                                                                                                            live_analysis = True), hurst_thresholds=self.functional_constraints.hurst_filter, 
-                                                                                                            mean_rev_type= self.mean_rev_type, momentum_type= self.momentum_type, live_analysis=True)
+        filtered_data, trendy_assets, mean_reverting_assets = analysis.filter_data(analysis.get_data_analysis(  self.closes,
+                                                                                                                self.rebalancing_period, 
+                                                                                                                self.functional_constraints.hurst_exponents_period, 
+                                                                                                                self.mean_rev_type,
+                                                                                                                self.momentum_type, 
+                                                                                                                self.functional_constraints, 
+                                                                                                                self.momentum_days,
+                                                                                                                live_analysis = True),
+                                                                                                            hurst_thresholds=self.functional_constraints.hurst_filter,
+                                                                                                            mean_rev_type= self.mean_rev_type,
+                                                                                                            momentum_type= self.momentum_type,
+                                                                                                            live_analysis=True)
         
         buy_and_sells = signalling.buy_and_sell_signalling(filtered_data, mean_rev_type = self.mean_rev_type, momentum_type = self.momentum_type, functional_constraints = self.functional_constraints)
 

@@ -1,11 +1,12 @@
-import src.data_models as dm
-import src.data_utils as utils
+import data_clients as dc
+import data_models as dm
+import data_utils as utils
 from datetime import datetime as dt
 import pandas as pd
 import yahoofinancials as yf
 import numpy as np
 
-import src.indicators as indicator
+import indicators as indicator
 
 
 def get_sigmoid_momentum_signals(close_prices_df, daily_tr_df, 
@@ -93,9 +94,14 @@ def buy_and_sell_signalling(data_filtered, mean_rev_type = dm.Mean_Rev_Type.RSI,
         elif momentum_type == dm.Momentum_Type.MACD:
             for asset, macd_values in trendy_assets:
                 close_price = next((tuple[1] for tuple in data['close_price'] if tuple[0] == asset), None)
+                macd = macd_values[1]
+                histogram = macd_values[3]
+                lower_threshold = macd_values[5]
+                upper_threshold = macd_values[6]
+                hist_trend = macd_values[7]
                 #if macd_values[3] > 0 and macd_values[4] > functional_constraints.get_momentum_threshold(): 
-                if 0 < macd_values[1] and macd_values[3] > macd_values[5] and macd_values[6] > 0: # and 0 < macd_values[4]:
-                    print("close_price:", close_price, "macd_values[3]==histogram:", macd_values[3], "macd_values[5]==threshold:", macd_values[5])
+                if 0 < macd and lower_threshold < histogram < upper_threshold and hist_trend > 0: # and 0 < macd_values[4]:
+                    #print("close_price:", close_price, "macd_values[3]==histogram:", macd_values[3], "macd_values[5]==threshold:", macd_values[5])
                     buy_and_sell_signals.setdefault(i, {}).setdefault('buy', []).append(asset)
                 elif macd_values[3] < -np.inf or macd_values[4] < -np.inf:
                     buy_and_sell_signals.setdefault(i, {}).setdefault('sell', []).append(asset)
@@ -112,9 +118,6 @@ def buy_and_sell_signalling(data_filtered, mean_rev_type = dm.Mean_Rev_Type.RSI,
         
         elif mean_rev_type == dm.Mean_Rev_Type.RSI:
             for asset, rsi in mean_reverting_assets:
-                #print("mean_reverting_assets", mean_reverting_assets)
-                #print("rsi", rsi)
-                #print("rsi_overbought", functional_constraints.rsi_overbought)
                 if rsi > functional_constraints.rsi_overbought:
                     buy_and_sell_signals.setdefault(i, {}).setdefault('sell', []).append(asset)
                 elif rsi < functional_constraints.rsi_oversold:

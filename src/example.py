@@ -7,14 +7,14 @@ import typing
 import typing_extensions
 import yahoofinancials as yf
 import data_models as dm
-import src.portfolio_strategy as strategy
-import src.tc_optimization as tc
+import portfolio_strategy as strategy
+import tc_optimization as tc
 
 
 Strategy= strategy.Strategy_Portfolio(
                         start_date = dt(2024, 1, 2),
                         end_date = dt(2024, 12, 31), # Actually, the end is today
-                        Asset_Category=dm.Asset_Category.Top20CryptoByMarketCap,
+                        Asset_Category=dm.Asset_Category.SP500_Stocks,
                         Momentum_Type= dm.Momentum_Type.MACD,
                         Mean_Rev_Type= dm.Mean_Rev_Type.RSI,
                         Rebalancing_Period= dm.Rebalancing_Period.daily,

@@ -1,15 +1,15 @@
 from data.crypto_data_scraping.get_crypto_data import CryptoDataProcessor
 from data.stock_data_scraping.get_stock_data import StockDataProcessor
-import src.data_models as dm
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import data_models as dm
 import pandas as pd
 from datetime import datetime as dt
 import yfinance as yf
 import ast  # Used to evaluate strings as Python literals
 import sys
 import os
-
-# Adiciona o diretório pai ao sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 class DataProcessor:
     crypto_csv_path = "data/crypto_data_scraping/crypto_prices_rank.csv"

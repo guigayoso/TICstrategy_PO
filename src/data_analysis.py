@@ -1,6 +1,6 @@
-import src.data_models as dm
+import data_models as dm
 import pandas as pd
-import src.indicators as indicator
+import indicators as indicator
 from hurst import compute_Hc
 from datetime import datetime as dt
 import numpy as np
@@ -58,9 +58,9 @@ def get_data_analysis(
         return {
             "hurst_exponents": list(zip(close_df.columns, H)),
             "bollinger_bands": list(zip(close_df.columns, bollinger_bands.values)) if mean_rev_type == dm.Mean_Rev_Type.Bollinger_Bands else None,
-            "RSI": list(zip(close_df.columns, RSI)) if mean_rev_type == dm.Mean_Rev_Type.RSI else None,
+            "RSI": list(zip(close_df.columns, RSI.iloc[-1])) if mean_rev_type == dm.Mean_Rev_Type.RSI else None,
             "momentum_cumrets": list(zip(close_df.columns, momentum_cumrets)) if momentum_type == dm.Momentum_Type.Cumulative_Returns else None,
-            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["threshold", key], macd_df.loc["trend", key])
+            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["lower_threshold", key], macd_df.loc["upper_threshold", key], macd_df.loc["trend", key])
                             for key in macd_df.columns
                             ] if momentum_type == dm.Momentum_Type.MACD else None,
             "close_price": list(zip(close_df.columns, close_df.iloc[-1].values)),
@@ -103,7 +103,7 @@ def get_data_analysis(
         
         elif momentum_type == dm.Momentum_Type.MACD:
             macd_df = indicator.calculate_macd(temp, functional_constraints.get_macd_short_window(), functional_constraints.get_macd_long_window(), signal_window=9)
-            print(macd_df)
+            #print(macd_df)
             
 
         result_dict[i] = {
@@ -112,7 +112,7 @@ def get_data_analysis(
             "bollinger_bands": list(zip(keys, bollinger_bands.values)) if mean_rev_type == dm.Mean_Rev_Type.Bollinger_Bands else [],
             "RSI": list(zip(keys, rsi.loc[rsi.index[rsi.index.get_indexer([close_df.index[i]], method="ffill")][0], keys])) if mean_rev_type == dm.Mean_Rev_Type.RSI else [],
             "momentum_cumrets": list(zip(keys, momentum_cumrets)) if momentum_type == dm.Momentum_Type.Cumulative_Returns else [],
-            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["threshold", key], macd_df.loc["trend", key])
+            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["lower_threshold", key], macd_df.loc["upper_threshold", key], macd_df.loc["trend", key])
                             for key in macd_df.columns
                             ] if momentum_type == dm.Momentum_Type.MACD else [],
             "close_price": list(zip(keys, temp.iloc[-1].values))
@@ -145,13 +145,6 @@ def get_rebalancing_period_days(rebalancing_period: dm.Rebalancing_Period) -> in
         raise ValueError(f"Unknown rebalancing period unit: {unit}")
 
 
-"""
-
-Here for example there's lots of things to change
-In line 75 0.45 < h < 0.55 this values should be passed as arguments so that the
-user can decide which Hurst value they want to use
-
-"""
 
 
 def filter_data(dict_to_filter, hurst_thresholds= dm.HurstFilter.STANDARD, mean_rev_type = dm.Mean_Rev_Type.RSI, momentum_type = dm.Momentum_Type.MACD,
@@ -245,6 +238,9 @@ def filter_data(dict_to_filter, hurst_thresholds= dm.HurstFilter.STANDARD, mean_
 
         filtered_result_dict[0] = assets_filtered
 
+        print("Filtered Result Dict:", filtered_result_dict)
+    
+
         return filtered_result_dict, df_trendy_assets, df_mean_reverting_assets
 
     for i, data in dict_to_filter.items():
@@ -285,8 +281,8 @@ def filter_data(dict_to_filter, hurst_thresholds= dm.HurstFilter.STANDARD, mean_
                     ] if momentum_type == dm.Momentum_Type.Cumulative_Returns else [],
 
                 "macd_values": [
-                    (key, macd, signal_line, histogram, hist_diff, threseshold, trend)
-                    for key, macd, signal_line, histogram, hist_diff, threseshold, trend in data["macd_values"]
+                    (key, macd, signal_line, histogram, hist_diff, lower_threseshold, upper_threshold, trend)
+                    for key, macd, signal_line, histogram, hist_diff, lower_threseshold, upper_threshold, trend in data["macd_values"]
                     if key in filtered_keys and momentum_type == dm.Momentum_Type.MACD
                     ] if momentum_type == dm.Momentum_Type.MACD else [],
 

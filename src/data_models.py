@@ -6,7 +6,7 @@ import pydantic
 import typing
 import typing_extensions
 import yahoofinancials as yf
-import src.tc_optimization as tc
+import tc_optimization as tc
 
 '''
 

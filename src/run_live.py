@@ -14,10 +14,10 @@ import live
 
 
 Live_Strategy = live.Live(Best_Delta=0.124, 
-                 Asset_Category=dm.Asset_Category.Top20CryptoByMarketCap,
-                 Momentum_Type= dm.Momentum_Type.Cumulative_Returns,
+                 Asset_Category=dm.Asset_Category.SP500_Stocks,
+                 Momentum_Type= dm.Momentum_Type.MACD,
                  Mean_Rev_Type= dm.Mean_Rev_Type.RSI,
-                 Rebalancing_Period= dm.Rebalancing_Period.WEEKLY,
+                 Rebalancing_Period= dm.Rebalancing_Period.daily,
                  Functional_Constraints= dm.Functional_Constraints(
                      Take_Profit= 0.2,
                      Stop_Loss= 0.1, Capital_at_Risk= 0.6, 

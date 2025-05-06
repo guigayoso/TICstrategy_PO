@@ -4,12 +4,12 @@ import pandas as pd
 from datetime import datetime as dt
 from datetime import timedelta
 
-import src.data_models as dm
-import src.data.data_collection as dc
+import data_models as dm
+import data.data_collection as dc
 import data_analysis as analysis
-import src.signalling as signalling
-import src.portfolio_weights as pw
-import src.tc_optimization as tc
+import signalling as signalling
+import portfolio_weights as pw
+import tc_optimization as tc
 
 import time
 

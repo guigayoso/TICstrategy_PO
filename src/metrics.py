@@ -1,13 +1,13 @@
-import src.data_models as dm
-import src.data_utils as utils
+import data_models as dm
+import data_utils as utils
 from datetime import datetime as dt
 import pandas as pd
 import yahoofinancials as yf
 import numpy as np
-import src.portfolio_weights as pw
-import src.tc_optimization as tc
-import src.data_analysis as analysis
-import src.data_utils as utils
+import portfolio_weights as pw
+import tc_optimization as tc
+import data_analysis as analysis
+import data_utils as utils
 from sklearn.model_selection import train_test_split
 
 def calculate_cumulative_returns(weights, returns_df):
