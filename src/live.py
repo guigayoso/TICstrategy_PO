@@ -50,8 +50,10 @@ class Live:
 
     def first_weights(self):
         
-        dcollection = dc.DataProcessor(self.Asset_Category, None, dt.today() - timedelta(days=self.Functional_Constraints.hurst_exponents_period))
-        closes = dcollection.get_asset_close_prices()
+        #dcollection = dc.DataProcessor(self.Asset_Category, None, dt.today() - timedelta(days=self.Functional_Constraints.hurst_exponents_period))
+        #closes = dcollection.get_asset_close_prices()
+        closes = pd.read_csv("closes.csv", index_col=0, parse_dates=True)
+
 
         print(f"First Closes: {closes}")
 

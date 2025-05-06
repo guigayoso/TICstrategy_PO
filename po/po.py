@@ -44,8 +44,8 @@ class PortfolioOptimization():
                                                                                                             live_analysis=True)
         
         buy_and_sells = signalling.buy_and_sell_signalling(filtered_data, mean_rev_type = self.mean_rev_type, momentum_type = self.momentum_type, functional_constraints = self.functional_constraints)
-
-        assets_to_buy, _ = analysis.extract_assets(buy_and_sells, self.functional_constraints.hurst_exponents_period)
+        print("Buy and sells:", buy_and_sells)
+        assets_to_buy, _ = analysis.extract_assets(buy_and_sells, 0)
         print("Assets to buy:", assets_to_buy)
 
         if len(assets_to_buy) > 0:
