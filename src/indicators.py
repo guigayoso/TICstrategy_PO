@@ -146,8 +146,15 @@ def calculate_macd(close, short_window=12, long_window=26, signal_window=9):
         sorted_positive_histogram = positive_histogram.sort_values(ascending=True)
 
         percentile = 0.85
-        threshold_index = int(len(sorted_positive_histogram) * percentile)
-        threshold = sorted_positive_histogram[threshold_index]
+        #threshold_index = int(len(sorted_positive_histogram) * percentile)
+        #threshold = sorted_positive_histogram[threshold_index]
+
+        lower_thresold_index = int(len(sorted_positive_histogram) * (percentile-0.8499))
+        lower_threshold = sorted_positive_histogram.iloc[lower_thresold_index]
+
+        upper_threshold_index = int(len(sorted_positive_histogram) * (percentile-0.15))
+        upper_threshold = sorted_positive_histogram.iloc[upper_threshold_index]
+
 
         gradient = np.gradient(histogram)
         trend = np.mean(gradient[-3:])
@@ -160,7 +167,8 @@ def calculate_macd(close, short_window=12, long_window=26, signal_window=9):
             'signal_line': signal_line.iloc[-1],
             'histogram': histogram.iloc[-1],
             'hist_diff': hist_diff.iloc[-1],
-            'threshold': threshold,
+            'lower_threshold': lower_threshold,
+            'upper_threshold': upper_threshold,
             'trend': trend
         }
     

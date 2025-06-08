@@ -337,7 +337,7 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
     pd.DataFrame: The new contributions normalized DataFrame
     """
     dates_to_iterate = list(buy_and_sell_signals_dict.keys())
-    print(f"Dates to iterate: {dates_to_iterate}")
+    #print(f"Dates to iterate: {dates_to_iterate}")
     rebalances_dates = [close_df.index[i] for i in dates_to_iterate]
     #print(f" Close prices in the beginning of the period: \n {close_df.loc[rebalances_dates[0]]}")
     #print(f" Close prices in the end of the period: \n {close_df.loc[rebalances_dates[-1]]}")
@@ -355,9 +355,24 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
     unbalanced_weights = pd.DataFrame(index=dates_to_iterate, columns=all_assets, dtype=float).fillna(0.0) # The weights at the end of the rebalancing period. It is equal to the new contributions normalized
     rebalanced_weights = pd.DataFrame(index=dates_to_iterate, columns=all_assets, dtype=float).fillna(0.0) # A weighted sum between the actual weights and the target weights of the next period. It is the optimal allocation of the portfolio in the beginning of the period
 
-    target_new_contributions = pd.DataFrame(index=dates_to_iterate, columns=all_assets).fillna(0.0) # New asset contributions based on the evolution of the target
-    target_new_contributions_normalized = pd.DataFrame(index=dates_to_iterate, columns=all_assets).fillna(0.0) # New asset contributions normalized based on the evolution of the target
-    target_unbalanced_weights = pd.DataFrame(index=dates_to_iterate, columns=all_assets).fillna(0.0) # The weights at the end of the rebalancing period based on the target weights
+    target_new_contributions = pd.DataFrame(
+    data=0.0,
+    index=dates_to_iterate,
+    columns=all_assets,
+    dtype=float
+    ) # New asset contributions based on the evolution of the target
+    target_new_contributions_normalized = pd.DataFrame(
+    data=0.0,
+    index=dates_to_iterate,
+    columns=all_assets,
+    dtype=float
+    ) # New asset contributions normalized based on the evolution of the target
+    target_unbalanced_weights = pd.DataFrame(
+    data=0.0,
+    index=dates_to_iterate,
+    columns=all_assets,
+    dtype=float
+    ) # The weights at the end of the rebalancing period based on the target weights
 
     target_performance = {} # The performance of the portfolio in the end of the period with the target weights
     performance_w_optimal_costs = {} # The performance of the portfolio in the end of the period with the optimal weights considering the transaction costs
@@ -370,7 +385,7 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
     CRRA_total = 0
 
     for i, date in enumerate(dates_to_iterate):
-        print(f"\n ---------------------------------------Date: {date} or {rebalances_dates[i]}---------------------------------------------")
+        #print(f"\n ---------------------------------------Date: {date} or {rebalances_dates[i]}---------------------------------------------")
 
         assets_to_buy, _ = analysis.extract_assets(buy_and_sell_signals_dict, date)
 
@@ -379,18 +394,18 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
             # From 96 to 102: "Beginning of the period, we calculate the target weights based on the signals generated"
             buy_array, _, _, _ = pw.calculate_uniform_weights(assets_to_buy, [], shorting_value)
             
-            print(f"Signals were generated to buy the following assts: {assets_to_buy}")
-            print(f"With the following weights: {buy_array}")
+            #print(f"Signals were generated to buy the following assts: {assets_to_buy}")
+            #print(f"With the following weights: {buy_array}")
 
             pw.update_weights_df(weights_df, date, assets_to_buy, buy_array)
-            print(f"\n Updating the weights_df: \n {weights_df}")
+            #print(f"\n Updating the weights_df: \n {weights_df}")
 
             if i == 0:
                 # In the beginning of a period i>0 we start with the optimal weights, which are the rebalanced
                 # weights from the previous period, but in the first period we start with the target weights
                 # é como se fosse um rebalanced(i == -1)
                 rebalanced_weights.loc[date] = weights_df.loc[date]
-                print(f"\n Initial rebalanced weights at {date}: \n {rebalanced_weights.loc[date]}")
+                #print(f"\n Initial rebalanced weights at {date}: \n {rebalanced_weights.loc[date]}")
 
                 previous_weights = weights_df.loc[date]
                 previous_assets_to_buy = assets_to_buy
@@ -402,38 +417,38 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
 
             cumulative_returns = (1 + previous_dataframe_assets).cumprod() - 1
             evolution_df.loc[previous_date] = cumulative_returns.iloc[-1]
-            print(f"\n Evolution of assets from {previous_date} to {date}: \n {evolution_df.loc[previous_date]}")
-            print(f"Previous dataframe assets: {previous_dataframe_assets}")
+            #print(f"\n Evolution of assets from {previous_date} to {date}: \n {evolution_df.loc[previous_date]}")
+            #print(f"Previous dataframe assets: {previous_dataframe_assets}")
             
-            print("\n------------------Optimal Weights Evolution------------------")
+            #print("\n------------------Optimal Weights Evolution------------------")
             # Grab on the rebalanced weights form the beginning of the last period and evolve the assets until the end of the last period (for i == 0 the rebalanced weights are the target weights)
             new_contributions, new_contributions_normalized = pw.calculate_new_contributions(rebalanced_weights, evolution_df, date, previous_date)
-            print(f"\n New contributions before normalization in the end of the period {previous_date}: \n {new_contributions}")
-            print(f"\n Normalized new contributions in the end of the period {previous_date}: \n {new_contributions_normalized}")
+            #print(f"\n New contributions before normalization in the end of the period {previous_date}: \n {new_contributions}")
+            #print(f"\n Normalized new contributions in the end of the period {previous_date}: \n {new_contributions_normalized}")
 
             unbalanced_weights.loc[previous_date] = new_contributions_normalized
-            print(f"\n Unbalanced weights in the end of the period {previous_date}: \n {unbalanced_weights.loc[previous_date]}")
+            #print(f"\n Unbalanced weights in the end of the period {previous_date}: \n {unbalanced_weights.loc[previous_date]}")
 
-            print("\n------------------Target Weights Evolution------------------")
+            #print("\n------------------Target Weights Evolution------------------")
             if weights_df.loc[previous_date].isnull().all():
                 previous_weights = target_new_contributions_normalized # If the last weights were NaN, we use the target_new_contributions_normalized
                 target_new_contributions, target_new_contributions_normalized = pw.calculate_new_contributions(target_new_contributions_normalized, evolution_df, date, previous_date, target=True)
             else:
                 previous_weights = weights_df.loc[previous_date] # If we had signals in the last period, we use the weights_df
                 target_new_contributions, target_new_contributions_normalized = pw.calculate_new_contributions(weights_df, evolution_df, date, previous_date)
-            print(f"\n New contributions of the target before normalization in the end of the period {previous_date}: \n {target_new_contributions}")
-            print(f"\n Normalized new contributions of the target in the end of the period {previous_date}: \n {target_new_contributions_normalized}")
+            #print(f"\n New contributions of the target before normalization in the end of the period {previous_date}: \n {target_new_contributions}")
+            #print(f"\n Normalized new contributions of the target in the end of the period {previous_date}: \n {target_new_contributions_normalized}")
 
             target_unbalanced_weights.loc[previous_date] = target_new_contributions_normalized
-            print(f"\n Unbalanced weights of the target in the end of the period {previous_date}: \n {target_unbalanced_weights.loc[previous_date]}")
+            #print(f"\n Unbalanced weights of the target in the end of the period {previous_date}: \n {target_unbalanced_weights.loc[previous_date]}")
                 
             # From 147 to 198: Prepare the beginning of the next period. Since the last period is over, we calculate the performance of the portfolio in the last period
-            print("\n------------------Performances------------------")
+            #print("\n------------------Performances------------------")
             target_performance[previous_date] = calculate_cumulative_returns(previous_weights, previous_dataframe_assets)
-            print(f"\n Target performance at {previous_date} before transaction costs: {target_performance[previous_date]} using the previous weights: {previous_weights}")
+            #print(f"\n Target performance at {previous_date} before transaction costs: {target_performance[previous_date]} using the previous weights: {previous_weights}")
 
             performance_w_optimal_costs[previous_date] = calculate_cumulative_returns(rebalanced_weights.loc[previous_date].values, previous_dataframe_assets)
-            print(f"\n Performance of the portfolio in the end of the period {previous_date} before transaction costs was {performance_w_optimal_costs[previous_date]} with the optimal weights: {rebalanced_weights.loc[previous_date]}")
+            #print(f"\n Performance of the portfolio in the end of the period {previous_date} before transaction costs was {performance_w_optimal_costs[previous_date]} with the optimal weights: {rebalanced_weights.loc[previous_date]}")
 
             if i > 1:
                 valid_weights = weights_df.dropna().loc[:dates_to_iterate[i - 1]]
@@ -442,7 +457,7 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                 if len(valid_weights) >= 2:
                     last_date = valid_weights.index[-1]
                     previous_target_unbalanced_weights = target_unbalanced_weights.loc[last_date - rebalancing_periods]
-                    print(f"\n Due to the change in weights from {last_date - rebalancing_periods} to {last_date} we have:")
+                    #print(f"\n Due to the change in weights from {last_date - rebalancing_periods} to {last_date} we have:")
 
                     target_performance[previous_date], target_cost_of_transaction = tc.apply_transaction_cost(
                         target_performance[previous_date],
@@ -452,7 +467,7 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                     )
 
                     total_target_cost_of_transaction += target_cost_of_transaction
-                    print(f"\n Target performance at {previous_date} after transaction costs: {target_performance[previous_date]}")
+                    #print(f"\n Target performance at {previous_date} after transaction costs: {target_performance[previous_date]}")
 
                     previous_unbalanced_weights = unbalanced_weights.loc[last_date - rebalancing_periods]
 
@@ -464,11 +479,11 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                     )
 
                     total_optimal_cost_of_transaction += optimal_cost_of_transaction
-                    print(f"\n Performance of the portfolio in the end of the period {previous_date} after transaction costs: {performance_w_optimal_costs[previous_date]}")
-                else:
-                    print(f"\n Not enough valid dates to apply transaction costs")
-            else:
-                print(f"\n No transaction costs to apply in the first period")
+                    #print(f"\n Performance of the portfolio in the end of the period {previous_date} after transaction costs: {performance_w_optimal_costs[previous_date]}")
+                #else:
+                    #print(f"\n Not enough valid dates to apply transaction costs")
+            #else:
+                #print(f"\n No transaction costs to apply in the first period")
 
             # In this part, we calculate the optimal delta (alpha) to prepare the rebalanced weights for the next period
             # i == 0 is the first period, so we don't have previous weights to calculate the transaction costs
@@ -486,40 +501,40 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
             CRRA_total += CRRA_t
 
             rebalanced_weights.loc[date] = pw.calculate_rebalanced_weights(alpha, weights_df.loc[date], unbalanced_weights.loc[previous_date])
-            print(f"\n Combining the target weights at {date} and the unbalanced weights at {previous_date} with an alpha of {alpha} we have the rebalanced weights for the beginning of {date}: \n {rebalanced_weights.loc[date]}")
+            #print(f"\n Combining the target weights at {date} and the unbalanced weights at {previous_date} with an alpha of {alpha} we have the rebalanced weights for the beginning of {date}: \n {rebalanced_weights.loc[date]}")
 
             #previous_weights = weights_df.loc[date]
             previous_assets_to_buy = assets_to_buy
         
         else:
-            print(f"\n No signals to buy for {date}. Continuing with previous assets.")
+            #print(f"\n No signals to buy for {date}. Continuing with previous assets.")
             if i > 0:
                 previous_date = dates_to_iterate[i - 1]
                 _, previous_dataframe_assets, _ = analysis.filter_assets_data(close_df, previous_date, rebalancing_periods, previous_assets_to_buy, all_assets)
 
                 # No signals
                 weights_df.loc[date] = np.nan
-                print(f"\n No signals generated: \n {weights_df}")
-                print(f"\n Since we don't have signals, we keep the previous assets.")
+                #print(f"\n No signals generated: \n {weights_df}")
+                #print(f"\n Since we don't have signals, we keep the previous assets.")
                 #print(f"\n To keep evolving the unbalanced weights {unbalanced_weights.loc[previous_date]} we need to calculate the evolution of the assets from {previous_date} to {date}")
 
                 # Calculate the evolution of the assets from the previous date to the current date
                 cumulative_returns = (1 + previous_dataframe_assets).cumprod() - 1
                 evolution_df.loc[previous_date] = cumulative_returns.iloc[-1]
-                print(f"\n Using the previous data frame assets: {previous_dataframe_assets}")
-                print(f"\n The evolution of these assets from {previous_date} to {date} is: \n {evolution_df.loc[previous_date]}")
+                #print(f"\n Using the previous data frame assets: {previous_dataframe_assets}")
+                #print(f"\n The evolution of these assets from {previous_date} to {date} is: \n {evolution_df.loc[previous_date]}")
 
 
-                print(f"\n------------------Optimal Weights Evolution------------------")
+                #print(f"\n------------------Optimal Weights Evolution------------------")
                 # Calculate the new contributions in the end of the rebalancing period based on the evolution of the assets, even if there are signals or not
                 new_contributions, new_contributions_normalized = pw.calculate_new_contributions(rebalanced_weights, evolution_df, date, previous_date)
-                print(f"\n New contributions before normalization in the end of the period {previous_date}: \n {new_contributions}")
-                print(f"\n Normalized new contributions in the end of the period {previous_date}: \n {new_contributions_normalized}")
+                #print(f"\n New contributions before normalization in the end of the period {previous_date}: \n {new_contributions}")
+                #print(f"\n Normalized new contributions in the end of the period {previous_date}: \n {new_contributions_normalized}")
 
                 unbalanced_weights.loc[previous_date] = new_contributions_normalized
-                print(f"\n Unbalanced weights in the end of the period {previous_date}: \n {unbalanced_weights.loc[previous_date]}")
+                #print(f"\n Unbalanced weights in the end of the period {previous_date}: \n {unbalanced_weights.loc[previous_date]}")
 
-                print(f"\n------------------Target Weights Evolution------------------")
+                #print(f"\n------------------Target Weights Evolution------------------")
                 # condicao para ver se o weights df era nan na iteracao pssada, se for nan, usar o target new normalized, se nao for nan usar o proprio weight df
                 if weights_df.loc[previous_date].isnull().all():
                     previous_weights = target_new_contributions_normalized # If the last weights were NaN, we use the target_new_contributions_normalized
@@ -527,17 +542,17 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                 else:
                     previous_weights = weights_df.loc[previous_date] # If we had signals in the last period, we use the weights_df
                     target_new_contributions, target_new_contributions_normalized = pw.calculate_new_contributions(weights_df, evolution_df, date, previous_date)
-                print(f"\n New contributions of the target before normalization in the end of the period {previous_date}: \n {target_new_contributions}")
-                print(f"\n Normalized new contributions of the target in the end of the period {previous_date}: \n {target_new_contributions_normalized}")
+                #print(f"\n New contributions of the target before normalization in the end of the period {previous_date}: \n {target_new_contributions}")
+                #print(f"\n Normalized new contributions of the target in the end of the period {previous_date}: \n {target_new_contributions_normalized}")
 
                 target_unbalanced_weights.loc[previous_date] = target_new_contributions_normalized
 
-                print(f"\n------------------Performances------------------")
+                #print(f"\n------------------Performances------------------")
                 target_performance[previous_date] = calculate_cumulative_returns(previous_weights, previous_dataframe_assets)
-                print(f"\n Target performance at {previous_date} before transaction costs: {target_performance[previous_date]} using the previous weights: {previous_weights}")
+                #print(f"\n Target performance at {previous_date} before transaction costs: {target_performance[previous_date]} using the previous weights: {previous_weights}")
 
                 performance_w_optimal_costs[previous_date] = calculate_cumulative_returns(rebalanced_weights.loc[previous_date].values, previous_dataframe_assets)
-                print(f"\n Performance of the portfolio in the end of the period {previous_date} was {performance_w_optimal_costs[previous_date]} with the optimal weights: {rebalanced_weights.loc[previous_date]}")
+                #print(f"\n Performance of the portfolio in the end of the period {previous_date} was {performance_w_optimal_costs[previous_date]} with the optimal weights: {rebalanced_weights.loc[previous_date]}")
 
 
                 if i > 1:
@@ -546,7 +561,7 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                     if len(valid_weights) >= 2 and weights_df.loc[dates_to_iterate[i - 1]].notna().all():
                         last_date = valid_weights.index[-1]
                         previous_target_unbalanced_weights = target_unbalanced_weights.loc[last_date - rebalancing_periods]
-                        print(f"\n Due to the change in weights from {last_date - rebalancing_periods} to {last_date} we have:")
+                        #print(f"\n Due to the change in weights from {last_date - rebalancing_periods} to {last_date} we have:")
 
                         target_performance[previous_date], target_cost_of_transaction = tc.apply_transaction_cost(
                             target_performance[previous_date],
@@ -556,7 +571,7 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                         )
 
                         total_target_cost_of_transaction += target_cost_of_transaction
-                        print(f"\n Target performance at {previous_date} after transaction costs: {target_performance[previous_date]}")
+                        #print(f"\n Target performance at {previous_date} after transaction costs: {target_performance[previous_date]}")
 
                         previous_unbalanced_weights = unbalanced_weights.loc[last_date - rebalancing_periods]
 
@@ -568,11 +583,11 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                         )
 
                         total_optimal_cost_of_transaction += optimal_cost_of_transaction
-                        print(f"\n Performance of the portfolio in the end of the period {previous_date} after transaction costs: {performance_w_optimal_costs[previous_date]}")
-                    else:
-                        print(f"\n No transaction costs to apply")
-                else:
-                    print(f"\n No transaction costs to apply in the first period")
+                        #print(f"\n Performance of the portfolio in the end of the period {previous_date} after transaction costs: {performance_w_optimal_costs[previous_date]}")
+                    #else:
+                        #print(f"\n No transaction costs to apply")
+                #else:
+                    #print(f"\n No transaction costs to apply in the first period")
 
                 # Since we don't have signals, we assume that the unbalanced weights are the rebalanced weights for the next period
                 rebalanced_weights.loc[date] = unbalanced_weights.loc[previous_date]
@@ -581,15 +596,14 @@ def get_portfolio_performance_delta(trendy_assets, mean_reverting_assets, buy_an
                 #print(f"\n Preparing the previous dataframe assets for the next period: {previous_dataframe_assets}")        
 
             elif i == 0:
-                #define rebalance weights as 1 for btc
-                rebalanced_weights.loc[date] = np.zeros(len(all_assets))
-                rebalanced_weights.loc[date, "BTC"] = 1
+                # Define equal weights for all assets
+                equal_weight = 1 / len(all_assets)
+                rebalanced_weights.loc[date] = np.full(len(all_assets), equal_weight)
                 weights_df.loc[date] = rebalanced_weights.loc[date]
-                print(f"\n Initial rebalanced weights without signal at {date}: \n {rebalanced_weights.loc[date]}")
+                #print(f"\n Initial rebalanced weights without signal at {date}: \n {rebalanced_weights.loc[date]}")
 
-                previous_assets_to_buy = "BTC"
+                previous_assets_to_buy = list(all_assets)
                 continue
-
     return CRRA_total, rebalances_dates, target_performance, performance_w_optimal_costs, weights_df, evolution_df, new_contributions, new_contributions_normalized, unbalanced_weights, rebalanced_weights, total_optimal_cost_of_transaction, total_target_cost_of_transaction
 
 def get_portfolio_performance_best_delta(test_size, trendy_assets, mean_reverting_assets, buy_and_sell_signals_dict, close_df, rebalancing_periods=7, shorting_value=0.0, transaction_cost=0.01, distance_method="Manhattan", gamma=0, delta_range=(0, 3), initial_step=1, verbose=True):
@@ -631,9 +645,9 @@ def get_portfolio_performance_best_delta(test_size, trendy_assets, mean_revertin
     train_keys = [k for k in train_keys if k <= train_limit]
 
     buy_and_sell_signals_train = {k: buy_and_sell_signals_dict[k] for k in train_keys}
-    print(f"\n Buy and sell signals train: \n {buy_and_sell_signals_train}")
+    #print(f"\n Buy and sell signals train: \n {buy_and_sell_signals_train}")
     buy_and_sell_signals_test = {k: buy_and_sell_signals_dict[k] for k in test_keys}
-    print(f"\n Buy and sell signals test: \n {buy_and_sell_signals_test}")
+    #print(f"\n Buy and sell signals test: \n {buy_and_sell_signals_test}")
 
     # NAO PRECISA POIS SO VAI ITERAR NAS DATAS DE REBALANCE DEFINIDAS PELO DICIONARIO BUY SELL
     #close_df_train = close_df.loc[:close_df.index[train_keys[-1]]]
@@ -648,8 +662,8 @@ def get_portfolio_performance_best_delta(test_size, trendy_assets, mean_revertin
 
     while step >= initial_step/1000:
 
-        print(f"\n Delta range: {delta_range}")
-        print(f"\n Step: {step}")
+        #print(f"\n Delta range: {delta_range}")
+        #print(f"\n Step: {step}")
 
         deltas = np.arange(delta_range[0], delta_range[1], step)
         CRRA = np.zeros(len(deltas))

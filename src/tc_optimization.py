@@ -67,16 +67,16 @@ def adjust_alpha(method, w_target, w_unbalanced, delta, verbose=False):
     if distance == 0:
         distance = 1e-10 # Avoid division by zero
     
-    if verbose:
-        print(f"Distance ({method}): {distance}")
-        print(f"Delta: {delta}")
+    #if verbose:
+    #    print(f"Distance ({method}): {distance}")
+    #    print(f"Delta: {delta}")
 
     """ if distance > delta:
         alpha = max(0, delta/distance)
     else:
         alpha = 1 """
 
-    print(f"Distance between {w_target} and {w_unbalanced} is {distance}")
+    #print(f"Distance between {w_target} and {w_unbalanced} is {distance}")
     return min(1, max(0, delta / distance)) if distance > delta else 1
 
 def optimize_alpha(w_target, w_unbalanced, trendy_assets_df, mean_reverting_assets_df, previous_dataframe_assets, previous_date, date, gamma = 3, alpha_range = (0, 1), step = 0.05, transaction_cost = 0.01, verbose=False):
@@ -125,14 +125,14 @@ def optimize_alpha(w_target, w_unbalanced, trendy_assets_df, mean_reverting_asse
         else:
             crra = np.mean((1 + portfolio_returns)**(1 - gamma) / (1 - gamma))
 
-        if verbose:
-            print(f"Alpha: {alpha}, Portfolio Returns: {portfolio_returns}, CRRA: {crra}")
+        #if verbose:
+            #print(f"Alpha: {alpha}, Portfolio Returns: {portfolio_returns}, CRRA: {crra}")
 
         if (best_alpha is None or crra > best_crra or (crra == best_crra and alpha > best_alpha)):
             best_crra = crra
             best_alpha = alpha
-            if verbose:
-                print(f"New best alpha: {best_alpha}, CRRA: {best_crra}")
+            #if verbose:
+                #print(f"New best alpha: {best_alpha}, CRRA: {best_crra}")
 
     return best_alpha, best_crra
     
@@ -160,7 +160,7 @@ def optimize_delta(w_target, w_unbalanced, returns, distance_method = "Euclidean
     best_delta = None
     best_crra = -np.inf
 
-    print(f"The delta optimization is using the following parameters: \n w_target: {w_target}, w_unbalanced: {w_unbalanced}, returns: {returns}, distance_method: {distance_method}, gamma: {gamma}, delta_range: {delta_range}, step: {step}, transaction_cost: {transaction_cost}, verbose: {verbose}")
+    #print(f"The delta optimization is using the following parameters: \n w_target: {w_target}, w_unbalanced: {w_unbalanced}, returns: {returns}, distance_method: {distance_method}, gamma: {gamma}, delta_range: {delta_range}, step: {step}, transaction_cost: {transaction_cost}, verbose: {verbose}")
     for delta in np.arange(delta_range[0], delta_range[1], step):
         
         alpha_t = adjust_alpha(method=distance_method, w_target=w_target, w_unbalanced=w_unbalanced, delta=delta)
@@ -224,7 +224,7 @@ def calculate_crra(delta, w_target, w_unbalanced, trendy_assets_df, mean_reverti
     #print(f"Parameters used to calculuate portfolio returns: w_rebalanced: {filtered_weights}, returns: {filtered_returns}, alpha_t: {alpha_t}")
     portfolio_returns_before_costs = np.dot(filtered_weights, filtered_returns)
     portfolio_returns = portfolio_returns_before_costs - transaction_cost * np.sum(np.abs(w_rebalanced - w_unbalanced))
-    print(f"Portfolio Returns: {portfolio_returns}")
+    #print(f"Portfolio Returns: {portfolio_returns}")
 
     if gamma == 1:
         return np.log(1 + portfolio_returns), alpha_t  # gamma = 1 (log utility)
@@ -263,8 +263,8 @@ def optimize_delta_refined(w_target, w_unbalanced, trendy_assets_df, mean_revert
     distance = max(distance, 1e-10)  # Evitar divisão por zero
     delta_range = (0, distance)
 
-    if verbose:
-        print(f"Distance calculated: {distance}. Delta range set to [0, {distance}].")
+    #if verbose:
+    #    print(f"Distance calculated: {distance}. Delta range set to [0, {distance}].")
     
     # Calcular os retornos futuros dos ativos
     future_assets_returns = get_future_assets_returns(trendy_assets_df, mean_reverting_assets_df, previous_dataframe_assets, previous_date, date)
@@ -425,9 +425,9 @@ def apply_transaction_cost(returns, transaction_cost, weights, previous_weights)
     weights = np.array(weights)
     previous_weights = np.array(previous_weights)
     weight_changes = np.abs(weights - previous_weights)
-    print(f"\n Weights: {weights}, previous_weights: {previous_weights}, weight_changes: {weight_changes}")
+    #print(f"\n Weights: {weights}, previous_weights: {previous_weights}, weight_changes: {weight_changes}")
     cost_of_transaction = transaction_cost * np.sum(weight_changes)
-    print(f" Cost of transaction: {cost_of_transaction}")
+    #print(f" Cost of transaction: {cost_of_transaction}")
 
     return returns - transaction_cost * np.sum(weight_changes), cost_of_transaction
 

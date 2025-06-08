@@ -74,12 +74,21 @@ class Strategy_Portfolio:
                                                 data_frequency= dm.ReturnsType.daily) """
         
         if self.asset_category == dm.Asset_Category.Top20CryptoByMarketCap:
-            dcollection = dc.DataProcessor(self.asset_category, "BTC-USD", self.start_date)
+            #dcollection = dc.DataProcessor(self.asset_category, "BTC-USD", self.start_date)
+            closes = pd.read_csv('/Users/guilhermegayoso/Desktop/TIC/Hurst/tic_crypto_data.csv', index_col=0, parse_dates=True)
+            closes['close_time'] = pd.to_datetime(closes['close_time'])
+            closes = closes.pivot(index='close_time', columns='symbol', values='close_price')
+            closes = closes.loc[self.start_date:]
 
         elif self.asset_category == dm.Asset_Category.SP500_Stocks:
-            dcollection = dc.DataProcessor(self.asset_category, "^GSPC", self.start_date)
+            #dcollection = dc.DataProcessor(self.asset_category, "^GSPC", self.start_date)
+            closes = pd.read_csv('/Users/guilhermegayoso/Desktop/TIC/Hurst/tic_top1000_stocks_vol.csv', parse_dates=True)
+            closes['close_time'] = pd.to_datetime(closes['open_time'])
+            closes = closes.pivot(index='close_time', columns='symbol', values='close_price')
+            closes = closes.loc[self.start_date:]
+            print(closes.head())
             
-        closes = dcollection.get_asset_close_prices()            
+        #closes = dcollection.get_asset_close_prices()           
         
         adjusted_start_date = self.start_date + pd.to_timedelta(self.hurst_exponents_period, unit='D')    
         # Benchmark
@@ -88,9 +97,9 @@ class Strategy_Portfolio:
                                                       end_date= self.end_date, 
                                                       data_frequency= dm.ReturnsType.daily) """
         
-        benchmark = dcollection.get_benchmark_close_prices(
-            start_date=adjusted_start_date
-        )
+        #benchmark = dcollection.get_benchmark_close_prices(
+        #    start_date=adjusted_start_date
+        #)
 
             
         #print("Close prices DataFrame:\n", closes)
@@ -98,7 +107,7 @@ class Strategy_Portfolio:
         # Run Portfolio Analysis
 
         portfolio_analysis_results = self.run_portfolio_analysis(
-                                        benchmark,
+                                        "benchmark",
                                         closes, 
                                         rebalancing_period= self.rebalancing_period_days, 
                                         hurst_exponents_period= self.hurst_exponents_period,
@@ -224,16 +233,26 @@ class Strategy_Portfolio:
             drop=True, inplace=True
         )  # Convert the existing index to a default range
         df_positions.index = pd.to_datetime(index_)  # Assign the new index
-        print(df_positions)
+        print("df_positions:\n", df_positions)
 
         import ast
 
         # Load CSV
         if self.asset_category == dm.Asset_Category.Top20CryptoByMarketCap:
-            df = pd.read_csv("data/crypto_data_scraping/crypto_prices_rank.csv")
+            #df = pd.read_csv("data/crypto_data_scraping/crypto_prices_rank.csv")
+            df = pd.read_csv('/Users/guilhermegayoso/Desktop/TIC/Hurst/tic_crypto_data.csv', parse_dates=True)
+            df['Date'] = pd.to_datetime(df['close_time'])
+            df = df.pivot(index='Date', columns='symbol', values='close_price')
+            df.reset_index(inplace=True)  # Reset index to have 'Date' as a column
+  
         elif self.asset_category == dm.Asset_Category.SP500_Stocks:
-            df = pd.read_csv("data/stock_data_scraping/sp500_data.csv")
-        
+            #df = pd.read_csv("data/stock_data_scraping/sp500_data.csv")
+            df = pd.read_csv('/Users/guilhermegayoso/Desktop/TIC/Hurst/tic_top1000_stocks_vol.csv', parse_dates=True)
+            df['Date'] = pd.to_datetime(df['open_time'])
+            print(df.head())
+            df = df.pivot(index='Date', columns='symbol', values='close_price')
+            df.reset_index(inplace=True)  # Reset index to have 'Date' as a column
+    
         # Initialize dictionary
         data = {}
 
@@ -247,7 +266,7 @@ class Strategy_Portfolio:
                         raise ValueError("Not enough values")
                     return [date] + ohlcv[:5]  # Ensure exactly 6 values
                 except (ValueError, SyntaxError, TypeError):
-                    return [date, 0, 0, 0, 0, 0]  # Return a full row with zeros
+                    return [date, 0, 0, 0, value, 0]  # Return a full row with zeros
 
             # Apply function and expand into separate columns
             expanded = df.apply(
@@ -264,11 +283,14 @@ class Strategy_Portfolio:
             # Store in dictionary
             data[col] = expanded
 
+            
+
         bt = Backtester(data)
         bt.positions = df_positions
         bt.run_backtest()
         print(bt.calculate_metrics())
         bt.plot_results()
+        return bt.calculate_metrics()
 
     def stress_test(self):
         pass

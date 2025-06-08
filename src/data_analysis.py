@@ -58,9 +58,9 @@ def get_data_analysis(
         return {
             "hurst_exponents": list(zip(close_df.columns, H)),
             "bollinger_bands": list(zip(close_df.columns, bollinger_bands.values)) if mean_rev_type == dm.Mean_Rev_Type.Bollinger_Bands else None,
-            "RSI": list(zip(close_df.columns, RSI)) if mean_rev_type == dm.Mean_Rev_Type.RSI else None,
+            "RSI": list(zip(close_df.columns, RSI.iloc[-1])) if mean_rev_type == dm.Mean_Rev_Type.RSI else None,
             "momentum_cumrets": list(zip(close_df.columns, momentum_cumrets)) if momentum_type == dm.Momentum_Type.Cumulative_Returns else None,
-            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["threshold", key], macd_df.loc["trend", key])
+            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["lower_threshold", key], macd_df.loc["upper_threshold", key], macd_df.loc["trend", key])
                             for key in macd_df.columns
                             ] if momentum_type == dm.Momentum_Type.MACD else None,
             "close_price": list(zip(close_df.columns, close_df.iloc[-1].values)),
@@ -103,7 +103,7 @@ def get_data_analysis(
         
         elif momentum_type == dm.Momentum_Type.MACD:
             macd_df = indicator.calculate_macd(temp, functional_constraints.get_macd_short_window(), functional_constraints.get_macd_long_window(), signal_window=9)
-            print(macd_df)
+            #print(macd_df)
             
 
         result_dict[i] = {
@@ -112,7 +112,7 @@ def get_data_analysis(
             "bollinger_bands": list(zip(keys, bollinger_bands.values)) if mean_rev_type == dm.Mean_Rev_Type.Bollinger_Bands else [],
             "RSI": list(zip(keys, rsi.loc[rsi.index[rsi.index.get_indexer([close_df.index[i]], method="ffill")][0], keys])) if mean_rev_type == dm.Mean_Rev_Type.RSI else [],
             "momentum_cumrets": list(zip(keys, momentum_cumrets)) if momentum_type == dm.Momentum_Type.Cumulative_Returns else [],
-            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["threshold", key], macd_df.loc["trend", key])
+            "macd_values": [(key, macd_df.loc["macd", key], macd_df.loc["signal_line", key], macd_df.loc["histogram", key], macd_df.loc["hist_diff", key], macd_df.loc["lower_threshold", key], macd_df.loc["upper_threshold", key], macd_df.loc["trend", key])
                             for key in macd_df.columns
                             ] if momentum_type == dm.Momentum_Type.MACD else [],
             "close_price": list(zip(keys, temp.iloc[-1].values))
@@ -249,6 +249,7 @@ def filter_data(dict_to_filter, hurst_thresholds= dm.HurstFilter.STANDARD, mean_
 
     for i, data in dict_to_filter.items():
         # Extract the Hurst exponents and their associated keys
+        print("data[hurst_exponents]", data["hurst_exponents"])
         keys, H = zip(*data["hurst_exponents"])
 
         # Filter out keys where H is between 0.45 and 0.55
@@ -285,8 +286,8 @@ def filter_data(dict_to_filter, hurst_thresholds= dm.HurstFilter.STANDARD, mean_
                     ] if momentum_type == dm.Momentum_Type.Cumulative_Returns else [],
 
                 "macd_values": [
-                    (key, macd, signal_line, histogram, hist_diff, threseshold, trend)
-                    for key, macd, signal_line, histogram, hist_diff, threseshold, trend in data["macd_values"]
+                    (key, macd, signal_line, histogram, hist_diff, lower_threseshold, upper_threshold, trend)
+                    for key, macd, signal_line, histogram, hist_diff, lower_threseshold, upper_threshold, trend in data["macd_values"]
                     if key in filtered_keys and momentum_type == dm.Momentum_Type.MACD
                     ] if momentum_type == dm.Momentum_Type.MACD else [],
 
@@ -407,6 +408,7 @@ def filter_assets_data(
     else:
         dataframe_days = close_df.iloc[date : date + rebalancing_periods]
 
-    dataframe_assets = dataframe_days[all_assets].pct_change()
+    #dataframe_assets = dataframe_days[all_assets].pct_change()
+    dataframe_assets = dataframe_days[all_assets].pct_change(fill_method=None)
     dataframe_assets_filtered = dataframe_days[assets_selected].pct_change()
     return dataframe_days, dataframe_assets, dataframe_assets_filtered
