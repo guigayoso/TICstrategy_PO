@@ -7,7 +7,7 @@ import yfinance  # type: ignore
 import yfinance as yf  # type: ignore
 import warnings
 
-from binance.client import Client
+#from binance.client import Client
 import data_models as dm
 import data_utils as utils
 

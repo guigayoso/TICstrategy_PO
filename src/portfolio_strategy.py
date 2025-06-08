@@ -1,3 +1,8 @@
+import sys
+import os
+
+# Adiciona o diretório pai ao sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from datetime import datetime as dt
 import enum
 import numpy as np
@@ -5,20 +10,21 @@ import pandas as pd
 import typing
 import typing_extensions
 import yahoofinancials as yf
-import data_models as dm
-import data_collection as dcollection
-import indicators
-import data_analysis as analysis
-import signalling
-import metrics
-import tc_optimization as tc
-import data_utils as utils
+import src.data_models as dm
+import src.indicators as indicators
+import src.data_analysis as analysis
+import src.signalling as signalling
+import src.metrics as metrics
+import src.tc_optimization as tc
+import src.data_utils as utils
 import data.data_collection as dc
-import visuals
+import src.visuals as visuals
+
+
 
 from sklearn.model_selection import train_test_split
 
-from backtesting.backtesting_test import Backtester
+from src.backtesting.backtesting_test import Backtester
 
 class Strategy_Portfolio:
     def __init__(self, 

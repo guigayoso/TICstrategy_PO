@@ -7,8 +7,8 @@ import typing
 import typing_extensions
 import yahoofinancials as yf
 import data_models as dm
-import portfolio_strategy as strategy
-import tc_optimization as tc
+import src.portfolio_strategy as strategy
+import src.tc_optimization as tc
 
 
 Strategy= strategy.Strategy_Portfolio(

@@ -9,7 +9,7 @@ import io
 import ast
 
 class StockDataProcessor:
-    def __init__(self, start_year=2019, prices_filename="sp500_stock_prices.csv", evolution_filename="sp500_evolution.csv"):
+    def __init__(self, start_year=2024, prices_filename="data/stock_data_scraping/sp500_data.csv", evolution_filename="data/stock_data_scraping/sp500_evolution.csv"):
         self.start_year = start_year
         self.prices_filename = prices_filename
         self.evolution_filename = evolution_filename
@@ -96,7 +96,7 @@ class StockDataProcessor:
                 # If the value is NaN, skip this ticker.
                 if pd.isna(open_val):
                     continue
-                row_data[ticker] = [open_val, high_val, low_val, close_val, volume_val]
+                row_data[ticker] = [float(open_val), float(high_val), float(low_val), float(close_val), float(volume_val)]
             except Exception:
                 # If a ticker isn't found in the downloaded data, skip it.
                 print('benfica')
@@ -145,7 +145,7 @@ class StockDataProcessor:
             })
 
         df = df[df['Date'] > last_date]
-        filename = 'sp500_changes.csv'
+        filename = 'data/stock_data_scraping/sp500_changes.csv'
         df.to_csv(filename, header=True, index=False, encoding='utf-8')
 
         return df
@@ -182,7 +182,7 @@ class StockDataProcessor:
         else:
             last_date = self.evolution.index[-1]
         end_date = pd.to_datetime(end_date)
-        self.changes = self.changes[(self.changes['Date'] > last_date) & (self.changes['Date'] < end_date)]
+        self.changes = self.changes.loc[(self.changes['Date'] > last_date) & (self.changes['Date'] < end_date)]
 
         def replace_dots_with_dashes(ticker_list):
             return [ticker.replace('.', '-') if '.' in ticker else ticker for ticker in ticker_list]
